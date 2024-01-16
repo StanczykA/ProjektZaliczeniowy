@@ -1,0 +1,266 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+import time
+import datetime
+
+def make_screenshot(driver):
+    today = datetime.datetime.today()
+    short_date = today.strftime('_ekranu%H%M%S')
+    screen_name = 'C:\\Users\\Adrian\\PycharmProjects\\' + 'zrzut' + short_date + '.png'
+    driver.get_screenshot_as_file(screen_name)
+
+class Logowanie:
+    def __init__(self, driver):
+        self.driver = driver
+        self.username_field_id = 'user-name'
+        self.password_field_id = 'password'
+        self.login_button_name = 'login-button'
+
+    def open(self):
+        self.driver.get('https://skleptest.pl/my-account/')
+        self.driver.maximize_window()
+
+    def enter_username(self, username):
+        field = self.driver.find_element(By.XPATH,'//*[@id="username"]')
+        field.send_keys(username)
+
+    def enter_password(self, password):
+        field = self.driver.find_element(By.XPATH, '//*[@id="password"]')
+        field.send_keys(password)
+
+    def click_login(self):
+        button = self.driver.find_element(By.XPATH, '//*[@id="customer_login"]/div[1]/form/p[3]/input[3]')
+        button.click()
+
+
+class bcolors:
+    OKGREEN = '\033[92m'
+    FAIL = '\033[91m'
+
+
+
+
+import pytest
+from selenium import webdriver
+from Funkcje import Logowanie
+import time
+from Funkcje import make_screenshot
+
+
+test_data = [
+    ('sta@test.pl', 'testowehaslo', 'https://skleptest.pl/my-account/'),
+    ('5464356436456', '%$%&^%*&%*&%&*^&^', 'https://skleptest.pl/my-account/'),
+    ('JHJLHHFLSHLFHSLFLSHFLSJHFLJSHFLJSHFLJHSJKFHSLFHLSFHSLJFHLSHF', '', 'https://skleptest.pl/my-account/'),
+    ('', '', 'https://skleptest.pl/my-account/'),
+    ('testowylogin', '', 'https://skleptest.pl/my-account/')
+]
+
+@pytest.mark.parametrize('username, password, url', test_data)
+def test_login_page(username, password, url):
+    driver = webdriver.Chrome()
+    page = Logowanie(driver)
+    page.open()
+    page.enter_username(username)
+    page.enter_password(password)
+    page.click_login()
+    time.sleep(1)
+
+    try:
+         driver.find_element ('xpath','/html/body/div/div/div[2]/div/div/main/article/div[2]/nav/ul/li[1]/a')
+         make_screenshot(driver)
+    except:
+        print('Logowanie nieudane')
+        raise
+    else:
+        print('Logowanie poprawne')
+    finally:
+        driver.quit()
+
+
+
+
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from Funkcje import make_screenshot
+from Funkcje import bcolors
+import time
+import pytest
+
+driver = webdriver.Chrome()
+driver.maximize_window()
+driver.get('https://skleptest.pl/')
+
+try:
+    account = driver.find_element('xpath','/html/body/div/header[1]/div/div/div/ul/li[3]/a')
+    account.click()
+except:
+    print(bcolors.FAIL + ' Test 1 Niepoprawnie otworzono okno rejestracji - FAILED ')
+    raise
+else:
+    print(bcolors.OKGREEN + 'Test 1 Okno rejestracji zostało otworzone poprawnie - PASSED')
+
+try:
+    email_field = driver.find_element ('xpath','//*[@id="reg_email"]')
+    email_field.send_keys('stanczykadrian3@gmail.com')
+
+    password_field = driver.find_element ('xpath','//*[@id="reg_password"]')
+    password_field.submit()
+
+    password_field = driver.find_element ('xpath','//*[@id="reg_password"]')
+    password_field.send_keys('testowehaslo')
+
+    register = driver.find_element('xpath','//*[@id="customer_login"]/div[2]/form/p[3]/input[3]')
+    register.click()
+
+except:
+    print(bcolors.FAIL + 'Test 2 Rejestracja nieudana - FAILED')
+    raise
+else:
+    print(bcolors.OKGREEN + 'Test 2 Rejestracja przebiegła poprawnie - PASSED')
+try:
+    shop = driver.find_element('xpath','//*[@id="page"]/div/div[1]/div/div/div/span[3]/a/span')
+    shop.click()
+
+    scarf = driver.find_element('xpath','//*[@id="page"]/div/div/div[2]/div/ul/li[7]/a/h2')
+    scarf.click()
+
+    dod_koszyk = driver.find_element('xpath','//*[@id="page"]/div/div/div[2]/div/ul/li[3]/a[2]')
+    dod_koszyk.click()
+except:
+    print(bcolors.FAIL + 'Test 3 Nie dodano towaru do koszyka - FAILED')
+    raise
+else:
+    print(bcolors.OKGREEN + 'Test 3 Poprawnie dodano towar do koszyka - PASSED')
+
+time.sleep(1)
+try:
+    koszyk = driver.find_element('xpath','//*[@id="page"]/header[1]/div/div/div/ul/li[2]/a')
+    koszyk.click()
+
+    minus_towar = driver.find_element('xpath','//*[@id="post-6"]/div[2]/form/table/tbody/tr[1]/td[5]/div/div/a[1]/span')
+    minus_towar.click()
+
+    update_koszyk = driver.find_element('xpath','//*[@id="post-6"]/div[2]/form/table/tbody/tr[2]/td/input[1]')
+    update_koszyk.click()
+
+except:
+    print(bcolors.FAIL + 'Test 4 Nie usunięto towaru z koszyka - FAILED')
+    raise
+else:
+    print(bcolors.OKGREEN + 'Test 4 Poprawnie usunięto towar z Koszyka - PASSED')
+
+
+time.sleep(1)
+try:
+    shop = driver.find_element('xpath','//*[@id="page"]/div/div[1]/div/div/div/span[3]/a/span')
+    shop.click()
+
+    jeans = driver.find_element('xpath','//*[@id="page"]/div/div/div[2]/div/ul/li[5]/a/h2')
+    jeans.click()
+
+    sortowanie = driver.find_element('xpath','//*[@id="page"]/div/div/div[2]/div/form/select')
+    sortowanie.click()
+
+    sortowanie_pop = driver.find_element('xpath','//*[@id="page"]/div/div/div[2]/div/form/select/option[2]')
+    sortowanie_pop.click()
+except:
+    print(bcolors.FAIL + 'Test 5 Towar nie został posortowany - FAILED')
+    raise
+else:
+    print(bcolors.OKGREEN + 'Test 5 Towar został posortowany po popularności - PASSED')
+
+
+kup_jeans = driver.find_element('xpath','//*[@id="page"]/div/div/div[2]/div/ul/li[1]/a[2]')
+kup_jeans.click()
+
+time.sleep(1)
+
+koszyk = driver.find_element('xpath','//*[@id="page"]/header[1]/div/div/div/ul/li[2]/a')
+koszyk.click()
+try:
+    zmiana_ilosci =driver.find_element('xpath',"//*[@class='input-text qty text']").clear()
+    zmiana_ilosci = driver.find_element('xpath', "//*[@class='input-text qty text']")
+    zmiana_ilosci.click()
+    zmiana_ilosci.send_keys('99')
+    update_koszyk = driver.find_element('xpath', '//*[@id="post-6"]/div[2]/form/table/tbody/tr[2]/td/input[1]')
+    update_koszyk.click()
+except:
+    print(bcolors.FAIL + 'Test 6 Nie udało się zmienić ilości towaru na 99 - FAILED')
+    raise
+else:
+    print(bcolors.OKGREEN + 'Test 6 Ilość towaru na 99 została zmieniona poprawnie - PASSED')
+
+time.sleep(2)
+
+try:
+    zatw_koszyk = driver.find_element('xpath','//*[@id="post-6"]/div[2]/div[2]/div/div/a')
+    zatw_koszyk.click()
+
+    first_name = driver.find_element('xpath','//*[@id="billing_first_name"]')
+    first_name.click()
+    first_name.send_keys('Adrian')
+
+    last_name = driver.find_element('xpath','//*[@id="billing_last_name"]')
+    last_name.click()
+    last_name.send_keys('Testowy')
+
+    company_name = driver.find_element('xpath','//*[@id="billing_company"]')
+    company_name.click()
+    company_name.send_keys('Testowy')
+
+    country = driver.find_element('xpath','//*[@id="select2-billing_country-container"]')
+    country.click()
+    company_name.send_keys(Keys.ARROW_DOWN)
+    company_name.send_keys(Keys.ARROW_DOWN)
+    company_name.send_keys(Keys.ENTER)
+
+    street = driver.find_element('xpath','//*[@id="billing_address_1"]')
+    street.click()
+    street.send_keys('Polna 145')
+
+    city = driver.find_element('xpath','//*[@id="billing_city"]')
+    city.click()
+    city.send_keys('Toruń')
+
+    state = driver.find_element('xpath','//*[@id="billing_state"]')
+    state.click()
+    state.send_keys('Kujawsko - Pomorskie')
+
+    zip = driver.find_element('xpath','//*[@id="billing_postcode"]')
+    zip.click()
+    zip.send_keys('87-100')
+
+    phone = driver.find_element('xpath','//*[@id="billing_phone"]')
+    phone.click()
+    phone.send_keys('333 666 999')
+except:
+    print(bcolors.FAIL + 'Test 7 Nie udało się uzupełnić formularza zamówienia - FAILED')
+    raise
+else:
+    print(bcolors.OKGREEN + 'Test 7 Formularz zamówienia został poprawnie wypełniony - PASSED')
+
+try:
+    payment = driver.find_element('xpath','//*[@id="payment_method_cod"]')
+
+    time.sleep(1)
+
+    payment = driver.find_element('xpath','//*[@id="payment"]/ul/li[3]/label')
+    payment.click()
+
+    time.sleep(1)
+
+    order = driver.find_element('xpath','//*[@id="place_order"]')
+    order.click()
+
+    time.sleep(2)
+
+    make_screenshot(driver)
+
+
+except:
+    print(bcolors.FAIL + 'Test 8 Nie udało się złożyć zamówienia - FAILED')
+    raise
+else:
+    print(bcolors.OKGREEN + 'Test 8 Zamówienie zostało poprawnie złożone - PASSED')
+driver.close()
